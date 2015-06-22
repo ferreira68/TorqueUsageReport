@@ -65,6 +65,7 @@ class Job:
                     self.email = value
                 elif key == "exec_host":
                     self.hosts = value
+                    self.unique_hosts = list()
                     fields = value.split('+')
                     if len(fields) > 1:
                         self.multinode = True
@@ -72,7 +73,9 @@ class Job:
                         self.multinode = False
                     total_cores = 0
                     for f in fields:
-                        core_spec = f.split('/')[1]
+                        hostname,core_spec = f.split('/')
+                        if not hostname in self.unique_hosts:
+                            self.unique_hosts.append(hostname)
                         if ("-" in core_spec) or ("," in core_spec):
                             specs = core_spec.split(",")
                             for s in specs:
@@ -83,7 +86,8 @@ class Job:
                                     num_proc = 1
                                 total_cores += num_proc
                         else:
-                            total_cores = 1
+                            total_cores += 1
+                    self.num_nodes = len(self.unique_hosts)
                     self.num_cores = total_cores
                 elif key == "Resource_List.ddisk":
                     self.req_disk = value
